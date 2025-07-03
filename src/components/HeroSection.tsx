@@ -1,6 +1,12 @@
-import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 const HeroSection = () => {
+  const navigate = useNavigate();
+
+  const handleTagClick = (tag: string) => {
+    navigate(`/search?q=${encodeURIComponent(tag)}`);
+  };
+
   return (
     <section className="relative py-20 px-4 text-center bg-gradient-hero">
       {/* Background decoration */}
@@ -30,18 +36,7 @@ const HeroSection = () => {
             <button
               key={tag}
               className="px-4 py-2 bg-discord-primary/10 hover:bg-discord-primary/20 text-discord-primary border border-discord-primary/30 rounded-full text-sm font-medium transition-all duration-200 hover:scale-105"
-              onClick={() => {
-                // Scroll to search section and populate with tag
-                const searchSection = document.querySelector('main');
-                searchSection?.scrollIntoView({ behavior: 'smooth' });
-                setTimeout(() => {
-                  const searchInput = document.querySelector('input[placeholder*="pesquisar"]') as HTMLInputElement;
-                  if (searchInput) {
-                    searchInput.value = tag;
-                    searchInput.dispatchEvent(new Event('input', { bubbles: true }));
-                  }
-                }, 500);
-              }}
+              onClick={() => handleTagClick(tag)}
             >
               #{tag}
             </button>

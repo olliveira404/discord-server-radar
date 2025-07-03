@@ -1,19 +1,31 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface SearchBarProps {
-  onSearch: (query: string, sortBy: string) => void;
+  onSearch?: (query: string, sortBy: string) => void;
+  initialQuery?: string;
+  initialSort?: string;
 }
 
-const SearchBar = ({ onSearch }: SearchBarProps) => {
-  const [query, setQuery] = useState("");
-  const [sortBy, setSortBy] = useState("recent");
+const SearchBar = ({ onSearch, initialQuery = "", initialSort = "recent" }: SearchBarProps) => {
+  const [query, setQuery] = useState(initialQuery);
+  const [sortBy, setSortBy] = useState(initialSort);
+  const navigate = useNavigate();
 
   const handleSearch = () => {
-    onSearch(query, sortBy);
+    if (onSearch) {
+      onSearch(query, sortBy);
+    } else {
+      // Navigate to search page with query params
+      const params = new URLSearchParams();
+      if (query.trim()) params.set('q', query);
+      if (sortBy !== 'recent') params.set('sort', sortBy);
+      navigate(`/search?${params.toString()}`);
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {

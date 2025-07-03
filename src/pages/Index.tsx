@@ -1,113 +1,62 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Header from "@/components/Header";
 import HeroSection from "@/components/HeroSection";
 import SearchBar from "@/components/SearchBar";
 import ServerCard from "@/components/ServerCard";
+import { supabase } from "@/integrations/supabase/client";
 
-// Mock data for demonstration
-const mockServers = [
-  {
-    id: "1",
-    name: "Anime Central",
-    description: "A maior comunidade de anime do Discord! Discuta seus animes favoritos, participe de eventos e faça novos amigos otakus.",
-    members: 15420,
-    tags: ["anime", "manga", "otaku", "jogos", "comunidade"],
-    lastBump: "2024-01-15T10:30:00Z",
-    icon: "",
-    inviteCode: "animeCentral123"
-  },
-  {
-    id: "2", 
-    name: "Gaming Squad BR",
-    description: "Servidor dedicado a jogadores brasileiros. Encontre seu squad, participe de campeonatos e descubra novos games!",
-    members: 8760,
-    tags: ["games", "esports", "competitivo", "brasil", "squad"],
-    lastBump: "2024-01-15T08:15:00Z",
-    icon: "",
-    inviteCode: "gamingSquad456"
-  },
-  {
-    id: "3",
-    name: "Tech Talk",
-    description: "Comunidade de desenvolvedores e entusiastas de tecnologia. Compartilhe conhecimento e cresça profissionalmente.",
-    members: 5230,
-    tags: ["programação", "tech", "desenvolvimento", "carreira", "estudos"],
-    lastBump: "2024-01-15T06:45:00Z", 
-    icon: "",
-    inviteCode: "techTalk789"
-  },
-  {
-    id: "4",
-    name: "Arte & Criatividade",
-    description: "Espaço para artistas digitais, tradicionais e criativos em geral. Compartilhe suas obras e inspire-se!",
-    members: 3450,
-    tags: ["arte", "design", "criatividade", "desenho", "digital"],
-    lastBump: "2024-01-15T05:20:00Z",
-    icon: "",
-    inviteCode: "arteCreate101"
-  },
-  {
-    id: "5",
-    name: "Música Brasileira",
-    description: "Celebre a música nacional! Desde MPB até funk, sertanejo e rock brasileiro. Todos os ritmos são bem-vindos.",
-    members: 2890,
-    tags: ["música", "brasil", "mpb", "rock", "cultura"],
-    lastBump: "2024-01-15T04:10:00Z",
-    icon: "",
-    inviteCode: "musicaBR202"
-  },
-  {
-    id: "6",
-    name: "Estudos & Vestibular",
-    description: "Grupo de estudos colaborativo para vestibular, ENEM e concursos. Vamos conquistar nossos objetivos juntos!",
-    members: 6780,
-    tags: ["estudos", "vestibular", "enem", "concursos", "educação"],
-    lastBump: "2024-01-15T03:00:00Z",
-    icon: "",
-    inviteCode: "estudos303"
-  }
-];
+interface Server {
+  id: string;
+  name: string;
+  description: string;
+  members: number;
+  tags: string[];
+  lastBump: string;
+  icon: string;
+  inviteCode: string;
+}
 
 const Index = () => {
-  const [filteredServers, setFilteredServers] = useState(mockServers);
-  const [isLoading, setIsLoading] = useState(false);
+  const [featuredServers, setFeaturedServers] = useState<Server[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const handleSearch = (query: string, sortBy: string) => {
-    setIsLoading(true);
-    
-    // Simulate API call delay
-    setTimeout(() => {
-      let filtered = [...mockServers];
-      
-      // Filter by search query
-      if (query.trim()) {
-        const keywords = query.toLowerCase().split(' ').filter(k => k.length > 0);
-        filtered = filtered.filter(server => 
-          keywords.every(keyword =>
-            server.tags.some(tag => tag.toLowerCase().includes(keyword)) ||
-            server.name.toLowerCase().includes(keyword) ||
-            server.description.toLowerCase().includes(keyword)
-          )
-        );
-      }
-      
-      // Sort results
-      switch (sortBy) {
-        case "recent":
-          filtered.sort((a, b) => new Date(b.lastBump).getTime() - new Date(a.lastBump).getTime());
-          break;
-        case "members":
-          filtered.sort((a, b) => b.members - a.members);
-          break;
-        case "name":
-          filtered.sort((a, b) => a.name.localeCompare(b.name));
-          break;
-      }
-      
-      setFilteredServers(filtered);
+  useEffect(() => {
+    fetchFeaturedServers();
+  }, []);
+
+  const fetchFeaturedServers = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('servers')
+        .select('*')
+        .eq('is_active', true)
+        .order('last_bump', { ascending: false })
+        .limit(12);
+
+      if (error) throw error;
+
+      const formattedServers = data?.map(server => ({
+        id: server.id,
+        name: server.name,
+        description: server.description,
+        members: server.member_count,
+        tags: server.tags,
+        lastBump: server.last_bump,
+        icon: server.icon_url || "",
+        inviteCode: server.invite_code
+      })) || [];
+
+      // Shuffle array for random display
+      const shuffled = formattedServers.sort(() => 0.5 - Math.random());
+      setFeaturedServers(shuffled);
+    } catch (error) {
+      console.error('Error fetching servers:', error);
+      setFeaturedServers([]);
+    } finally {
       setIsLoading(false);
-    }, 500);
+    }
   };
+
 
   return (
     <div className="min-h-screen bg-background">
@@ -116,7 +65,7 @@ const Index = () => {
       
       {/* Main Content */}
       <main className="container mx-auto px-4 py-12">
-        <SearchBar onSearch={handleSearch} />
+        <SearchBar />
         
         {/* Results Section */}
         <section className="mb-12">
@@ -125,7 +74,7 @@ const Index = () => {
               Servidores em Destaque
             </h2>
             <div className="text-sm text-muted-foreground">
-              {filteredServers.length} servidor(es) encontrado(s)
+              {featuredServers.length} servidor(es) em destaque
             </div>
           </div>
           
@@ -152,13 +101,13 @@ const Index = () => {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredServers.map((server) => (
+              {featuredServers.map((server) => (
                 <ServerCard key={server.id} server={server} />
               ))}
             </div>
           )}
           
-          {!isLoading && filteredServers.length === 0 && (
+          {!isLoading && featuredServers.length === 0 && (
             <div className="text-center py-12">
               <div className="text-6xl mb-4">🔍</div>
               <h3 className="text-xl font-semibold text-foreground mb-2">

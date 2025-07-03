@@ -9,13 +9,125 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      bump_logs: {
+        Row: {
+          bumped_at: string
+          id: string
+          server_id: string
+          user_id: string
+        }
+        Insert: {
+          bumped_at?: string
+          id?: string
+          server_id: string
+          user_id: string
+        }
+        Update: {
+          bumped_at?: string
+          id?: string
+          server_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bump_logs_server_id_fkey"
+            columns: ["server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      servers: {
+        Row: {
+          created_at: string
+          description: string
+          discord_server_id: string
+          icon_url: string | null
+          id: string
+          invite_code: string
+          is_active: boolean | null
+          last_bump: string | null
+          member_count: number
+          name: string
+          owner_id: string
+          tags: string[]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          discord_server_id: string
+          icon_url?: string | null
+          id?: string
+          invite_code: string
+          is_active?: boolean | null
+          last_bump?: string | null
+          member_count?: number
+          name: string
+          owner_id: string
+          tags?: string[]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          discord_server_id?: string
+          icon_url?: string | null
+          id?: string
+          invite_code?: string
+          is_active?: boolean | null
+          last_bump?: string | null
+          member_count?: number
+          name?: string
+          owner_id?: string
+          tags?: string[]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      user_profiles: {
+        Row: {
+          created_at: string
+          discord_avatar: string | null
+          discord_id: string
+          discord_username: string
+          id: string
+          server_count: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          discord_avatar?: string | null
+          discord_id: string
+          discord_username: string
+          id?: string
+          server_count?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          discord_avatar?: string | null
+          discord_id?: string
+          discord_username?: string
+          id?: string
+          server_count?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      cleanup_inactive_servers: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
