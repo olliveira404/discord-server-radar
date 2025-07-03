@@ -61,12 +61,15 @@ serve(async (req) => {
 
     const guilds: DiscordGuild[] = await response.json()
     console.log('Fetched guilds:', guilds.length)
+    console.log('Sample guild data:', guilds[0])
 
     // Filter only guilds where user is owner
     const ownedGuilds = guilds.filter(guild => {
       // Check if user is owner OR has administrator permissions
       const hasAdminPermissions = (BigInt(guild.permissions) & BigInt(0x8)) === BigInt(0x8)
-      return guild.owner || hasAdminPermissions
+      const isOwnerOrAdmin = guild.owner || hasAdminPermissions
+      console.log(`Guild ${guild.name}: owner=${guild.owner}, hasAdmin=${hasAdminPermissions}, result=${isOwnerOrAdmin}`)
+      return isOwnerOrAdmin
     })
     
     console.log('Owned guilds:', ownedGuilds.length)
