@@ -18,6 +18,11 @@ const buttonVariants = cva(
           "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
+        discord: "bg-gradient-discord text-white hover:shadow-[var(--shadow-discord)] hover:scale-105 transition-all duration-300",
+        premium: "bg-discord-secondary text-white hover:bg-discord-secondary/90 shadow-lg hover:shadow-xl transition-all duration-300",
+        success: "bg-discord-success text-white hover:bg-discord-success/90",
+        warning: "bg-discord-warning text-black hover:bg-discord-warning/90",
+        danger: "bg-discord-danger text-white hover:bg-discord-danger/90",
       },
       size: {
         default: "h-10 px-4 py-2",
