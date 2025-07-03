@@ -45,7 +45,7 @@ serve(async (req) => {
       throw new Error('Token do Discord não encontrado')
     }
 
-    // Fetch user's guilds from Discord API
+    // Fetch user's guilds from Discord API with owner permissions check
     const response = await fetch('https://discord.com/api/v10/users/@me/guilds', {
       headers: {
         'Authorization': `Bearer ${discordAccessToken}`,
@@ -54,15 +54,22 @@ serve(async (req) => {
     })
 
     if (!response.ok) {
-      throw new Error('Erro ao buscar servidores do Discord')
+      const errorText = await response.text()
+      console.error('Discord API Error:', response.status, errorText)
+      throw new Error(`Erro ao buscar servidores do Discord: ${response.status}`)
     }
 
     const guilds: DiscordGuild[] = await response.json()
+    console.log('Fetched guilds:', guilds.length)
 
-    // Filter only guilds where user is owner and has icon
-    const ownedGuildsWithIcon = guilds.filter(guild => 
-      guild.owner && guild.icon !== null
-    )
+    // Filter only guilds where user is owner
+    const ownedGuilds = guilds.filter(guild => {
+      // Check if user is owner OR has administrator permissions
+      const hasAdminPermissions = (BigInt(guild.permissions) & BigInt(0x8)) === BigInt(0x8)
+      return guild.owner || hasAdminPermissions
+    })
+    
+    console.log('Owned guilds:', ownedGuilds.length)
 
     // Get already added servers from database
     const { data: existingServers } = await supabaseClient
@@ -74,14 +81,17 @@ serve(async (req) => {
     const existingServerIds = existingServers?.map(s => s.discord_server_id) || []
 
     // Filter out already added servers
-    const availableServers = ownedGuildsWithIcon
+    const availableServers = ownedGuilds
       .filter(guild => !existingServerIds.includes(guild.id))
       .map(guild => ({
         id: guild.id,
         name: guild.name,
         icon_url: guild.icon ? `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png` : null,
-        member_count: guild.approximate_member_count || 0
+        member_count: guild.approximate_member_count || 0,
+        has_icon: !!guild.icon
       }))
+    
+    console.log('Available servers:', availableServers.length)
 
     return new Response(
       JSON.stringify({ servers: availableServers }),
