@@ -2,13 +2,12 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Server, Users, Trash2 } from "lucide-react";
+import AddServerModal from "@/components/AddServerModal";
 
 interface UserServer {
   id: string;
@@ -27,18 +26,7 @@ const Profile = () => {
   const { toast } = useToast();
   const [userServers, setUserServers] = useState<UserServer[]>([]);
   const [isLoadingServers, setIsLoadingServers] = useState(true);
-  const [showAddForm, setShowAddForm] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const [formData, setFormData] = useState({
-    discord_server_id: "",
-    name: "",
-    description: "",
-    member_count: "",
-    invite_code: "",
-    icon_url: "",
-    tags: ""
-  });
+  const [showAddModal, setShowAddModal] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -69,58 +57,6 @@ const Profile = () => {
     }
   };
 
-  const handleAddServer = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!user || userServers.length >= 3) return;
-
-    setIsSubmitting(true);
-    try {
-      const tags = formData.tags
-        .split(',')
-        .map(tag => tag.trim().toLowerCase())
-        .filter(tag => tag.length > 0)
-        .slice(0, 5);
-
-      const { error } = await supabase.from('servers').insert({
-        discord_server_id: formData.discord_server_id,
-        name: formData.name,
-        description: formData.description,
-        member_count: parseInt(formData.member_count) || 0,
-        owner_id: user.id,
-        invite_code: formData.invite_code,
-        icon_url: formData.icon_url || null,
-        tags: tags
-      });
-
-      if (error) throw error;
-
-      toast({
-        title: "Sucesso!",
-        description: "Servidor adicionado com sucesso"
-      });
-
-      setFormData({
-        discord_server_id: "",
-        name: "",
-        description: "",
-        member_count: "",
-        invite_code: "",
-        icon_url: "",
-        tags: ""
-      });
-      setShowAddForm(false);
-      fetchUserServers();
-    } catch (error: any) {
-      console.error('Error adding server:', error);
-      toast({
-        title: "Erro",
-        description: error.message || "Erro ao adicionar servidor",
-        variant: "destructive"
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
 
   const handleDeleteServer = async (serverId: string) => {
     try {
@@ -188,7 +124,7 @@ const Profile = () => {
             
             {userServers.length < 3 && (
               <Button 
-                onClick={() => setShowAddForm(!showAddForm)}
+                onClick={() => setShowAddModal(true)}
                 variant="discord"
               >
                 <Plus className="w-4 h-4 mr-2" />
@@ -197,118 +133,11 @@ const Profile = () => {
             )}
           </div>
 
-          {/* Add Server Form */}
-          {showAddForm && (
-            <Card className="mb-8">
-              <CardHeader>
-                <CardTitle>Adicionar Novo Servidor</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handleAddServer} className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium mb-2">
-                        ID do Servidor Discord *
-                      </label>
-                      <Input
-                        value={formData.discord_server_id}
-                        onChange={(e) => setFormData({...formData, discord_server_id: e.target.value})}
-                        placeholder="123456789123456789"
-                        required
-                      />
-                    </div>
-                    
-                    <div>
-                      <label className="block text-sm font-medium mb-2">
-                        Nome do Servidor *
-                      </label>
-                      <Input
-                        value={formData.name}
-                        onChange={(e) => setFormData({...formData, name: e.target.value})}
-                        placeholder="Meu Servidor Incrível"
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium mb-2">
-                      Descrição *
-                    </label>
-                    <Textarea
-                      value={formData.description}
-                      onChange={(e) => setFormData({...formData, description: e.target.value})}
-                      placeholder="Descrição do seu servidor..."
-                      required
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium mb-2">
-                        Código do Convite *
-                      </label>
-                      <Input
-                        value={formData.invite_code}
-                        onChange={(e) => setFormData({...formData, invite_code: e.target.value})}
-                        placeholder="abcdef123"
-                        required
-                      />
-                    </div>
-                    
-                    <div>
-                      <label className="block text-sm font-medium mb-2">
-                        Número de Membros *
-                      </label>
-                      <Input
-                        type="number"
-                        value={formData.member_count}
-                        onChange={(e) => setFormData({...formData, member_count: e.target.value})}
-                        placeholder="100"
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium mb-2">
-                      URL do Ícone (opcional)
-                    </label>
-                    <Input
-                      value={formData.icon_url}
-                      onChange={(e) => setFormData({...formData, icon_url: e.target.value})}
-                      placeholder="https://..."
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium mb-2">
-                      Tags (máximo 5, separadas por vírgula) *
-                    </label>
-                    <Input
-                      value={formData.tags}
-                      onChange={(e) => setFormData({...formData, tags: e.target.value})}
-                      placeholder="anime, games, comunidade, brasil"
-                      required
-                    />
-                  </div>
-
-                  <div className="flex gap-2">
-                    <Button type="submit" disabled={isSubmitting}>
-                      {isSubmitting ? "Adicionando..." : "Adicionar Servidor"}
-                    </Button>
-                    <Button 
-                      type="button" 
-                      variant="outline" 
-                      onClick={() => setShowAddForm(false)}
-                    >
-                      Cancelar
-                    </Button>
-                  </div>
-                </form>
-              </CardContent>
-            </Card>
-          )}
+          <AddServerModal
+            open={showAddModal}
+            onOpenChange={setShowAddModal}
+            onServerAdded={fetchUserServers}
+          />
 
           {/* User Servers */}
           <div className="space-y-6">
@@ -338,7 +167,7 @@ const Profile = () => {
                   <p className="text-muted-foreground mb-4">
                     Adicione seu primeiro servidor para começar a divulgar!
                   </p>
-                  <Button onClick={() => setShowAddForm(true)} variant="discord">
+                  <Button onClick={() => setShowAddModal(true)} variant="discord">
                     <Plus className="w-4 h-4 mr-2" />
                     Adicionar Servidor
                   </Button>
