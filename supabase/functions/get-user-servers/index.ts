@@ -39,11 +39,15 @@ serve(async (req) => {
     }
 
     // Get user's Discord access token from metadata
+    console.log('User metadata:', JSON.stringify(user.user_metadata, null, 2))
     const discordAccessToken = user.user_metadata?.provider_token
 
     if (!discordAccessToken) {
-      throw new Error('Token do Discord não encontrado')
+      console.error('Discord token not found in user metadata')
+      throw new Error('Token do Discord não encontrado. Faça login novamente.')
     }
+    
+    console.log('Discord token available:', !!discordAccessToken)
 
     // Fetch user's guilds from Discord API with owner permissions check
     const response = await fetch('https://discord.com/api/v10/users/@me/guilds', {
