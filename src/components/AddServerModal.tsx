@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -118,7 +119,7 @@ const AddServerModal = ({ open, onOpenChange, onServerAdded }: AddServerModalPro
               <div className="text-sm text-muted-foreground">Carregando seus servidores...</div>
             ) : availableServers.length === 0 ? (
               <div className="text-sm text-muted-foreground">
-                Nenhum servidor disponível. Você precisa ser dono do servidor e ele deve ter um ícone.
+                Nenhum servidor disponível. Você precisa ser proprietário ou administrador do servidor.
               </div>
             ) : (
               <Select value={selectedServerId} onValueChange={setSelectedServerId}>
@@ -129,12 +130,18 @@ const AddServerModal = ({ open, onOpenChange, onServerAdded }: AddServerModalPro
                   {availableServers.map((server) => (
                     <SelectItem key={server.id} value={server.id}>
                       <div className="flex items-center gap-2">
-                        {server.icon_url && (
+                        {server.icon_url ? (
                           <img 
                             src={server.icon_url} 
                             alt={server.name}
                             className="w-6 h-6 rounded-full"
                           />
+                        ) : (
+                          <div className="w-6 h-6 bg-gradient-discord rounded-full flex items-center justify-center">
+                            <span className="text-white text-xs font-bold">
+                              {server.name.charAt(0).toUpperCase()}
+                            </span>
+                          </div>
                         )}
                         <span>{server.name}</span>
                         <span className="text-muted-foreground text-sm">
