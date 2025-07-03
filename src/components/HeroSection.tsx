@@ -25,36 +25,27 @@ const HeroSection = () => {
           Encontre comunidades perfeitas para você ou promova seu servidor para milhares de usuários.
         </p>
         
-        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-          <Button 
-            variant="discord" 
-            size="lg" 
-            className="text-lg px-8 py-4 hover:animate-glow"
-          >
-            🚀 Adicionar Meu Servidor
-          </Button>
-          <Button 
-            variant="outline" 
-            size="lg" 
-            className="text-lg px-8 py-4 border-discord-primary/30 hover:border-discord-primary hover:bg-discord-primary/10"
-          >
-            📊 Ver Ranking
-          </Button>
-        </div>
-        
-        <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-          <div className="space-y-2">
-            <div className="text-3xl font-bold text-discord-primary">10,000+</div>
-            <div className="text-muted-foreground">Servidores cadastrados</div>
-          </div>
-          <div className="space-y-2">
-            <div className="text-3xl font-bold text-discord-secondary">50,000+</div>
-            <div className="text-muted-foreground">Usuários ativos</div>
-          </div>
-          <div className="space-y-2">
-            <div className="text-3xl font-bold text-discord-success">1M+</div>
-            <div className="text-muted-foreground">Conexões realizadas</div>
-          </div>
+        <div className="mt-8 flex flex-wrap justify-center gap-3">
+          {['anime', 'games', 'música', 'arte', 'estudos', 'tecnologia', 'memes', 'comunidade'].map((tag) => (
+            <button
+              key={tag}
+              className="px-4 py-2 bg-discord-primary/10 hover:bg-discord-primary/20 text-discord-primary border border-discord-primary/30 rounded-full text-sm font-medium transition-all duration-200 hover:scale-105"
+              onClick={() => {
+                // Scroll to search section and populate with tag
+                const searchSection = document.querySelector('main');
+                searchSection?.scrollIntoView({ behavior: 'smooth' });
+                setTimeout(() => {
+                  const searchInput = document.querySelector('input[placeholder*="pesquisar"]') as HTMLInputElement;
+                  if (searchInput) {
+                    searchInput.value = tag;
+                    searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+                  }
+                }, 500);
+              }}
+            >
+              #{tag}
+            </button>
+          ))}
         </div>
       </div>
     </section>

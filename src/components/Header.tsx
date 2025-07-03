@@ -15,25 +15,8 @@ const Header = () => {
           </span>
         </div>
 
-        {/* Navigation */}
-        <nav className="hidden md:flex items-center space-x-6">
-          <a href="#" className="text-foreground hover:text-discord-primary transition-colors">
-            Servidores
-          </a>
-          <a href="#" className="text-foreground hover:text-discord-primary transition-colors">
-            Ranking
-          </a>
-          <a href="#" className="text-foreground hover:text-discord-primary transition-colors">
-            Sobre
-          </a>
-        </nav>
-
-        {/* Auth Buttons */}
-        <div className="flex items-center space-x-2">
-          <Button variant="ghost" size="sm">
-            <User className="w-4 h-4" />
-            Entrar
-          </Button>
+        {/* Auth Button */}
+        <div className="flex items-center">
           <Button variant="discord" size="sm">
             Login com Discord
           </Button>
